@@ -1,16 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gpicchio <gpicchio@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:56:53 by gpicchio          #+#    #+#             */
-/*   Updated: 2024/11/21 17:50:59 by gpicchio         ###   ########.fr       */
+/*   Created: 2024/11/21 17:56:23 by gpicchio          #+#    #+#             */
+/*   Updated: 2024/11/22 10:14:46 by gpicchio         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
+
+#define MAX_FD 4096
 
 char	*clean(char *line)
 {
@@ -80,20 +82,30 @@ char	*append(int fd, char *line)
 
 char	*get_next_line(int fd)
 {
-	static char	*line;
+	static char	*lines[MAX_FD];
 	char		*ret;
 
 	if (fd == -42)
-		return (free(line), NULL);
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	{
+		fd = 0;
+		while (fd < MAX_FD)
+		{
+			if (lines[fd])
+				free(lines[fd]);
+			lines[fd] = NULL;
+			fd++;
+		}
 		return (NULL);
-	if (!line)
-		line = ft_strdup("");
-	line = append(fd, line);
-	if (!line)
+	}
+	if (fd < 0 || fd >= MAX_FD || BUFFER_SIZE <= 0)
 		return (NULL);
-	ret = get_first_line(line);
-	line = clean(line);
+	if (!lines[fd])
+		lines[fd] = ft_strdup("");
+	lines[fd] = append(fd, lines[fd]);
+	if (!lines[fd])
+		return (NULL);
+	ret = get_first_line(lines[fd]);
+	lines[fd] = clean(lines[fd]);
 	return (ret);
 }
 /* 
@@ -101,14 +113,34 @@ int main(int ac, char **av)
 {
 	int fd;
 	char *line;
-
-	fd = open(av[1], O_RDONLY);
-	while ((line = get_next_line(fd)))
-	{
-		printf("%s", line);
-		free(line);
-	}
-	close(fd);
-	(void)ac;
-	return (0);
+	int fd1;
+	int fd2;
+	
+	fd1 = open(av[1], O_RDONLY);
+	fd2 = open(av[2], O_RDONLY);
+	line = get_next_line(fd1);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd2);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd2);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd2);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("%s", line);
+	free(line);
+	line = get_next_line(fd1);
+	get_next_line(-42);
+	close(fd1);
+	close(fd2);
 } */
